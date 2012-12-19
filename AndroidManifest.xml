@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.circularvale.wallpaperegs"
+    android:versionCode="1"
+    android:versionName="1.0" >
+
+    
+
+    <application
+        android:icon="@drawable/ic_launcher"
+        android:label="AndEngine LiveWallpaper Examples" >
+              <service
+            android:label="AndEngine LiveWallpaper Examples"
+            android:name=".AccelerometerSpriteActivity"
+            android:permission="android.permission.BIND_WALLPAPER">
+            <intent-filter>
+                <action android:name="android.service.wallpaper.WallpaperService" />
+            </intent-filter>
+            <meta-data android:name="android.service.wallpaper" android:resource="@xml/manoxml" />
+        </service>
+              <activity android:name="BallActivity"></activity>
+              <activity android:name=".AccelerometerSpriteActivity"></activity>
+              <activity android:name="WallPaperActivity"></activity>
+
+   		
+        		
+    </application>
+	<uses-feature android:name="android.software.live_wallpaper"
+		android:required="true"></uses-feature>
+	<uses-sdk android:minSdkVersion="8" />
+</manifest>
