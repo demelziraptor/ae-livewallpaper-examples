@@ -120,6 +120,7 @@ public class AccelerometerSpriteActivity extends BaseLiveWallpaperService implem
                     case Sensor.TYPE_ACCELEROMETER:
                             accellerometerSpeedX = (int) event.values[0];
                             accellerometerSpeedY = (int) event.values[1];
+                            accellerometerSpeedX *= -1;
                             break;
                     }
             }
