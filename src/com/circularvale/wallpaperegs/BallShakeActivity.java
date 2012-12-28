@@ -30,8 +30,8 @@ public class BallShakeActivity extends BaseLiveWallpaperService {
 	private static final int CAMERA_WIDTH = 720;
 	private static final int CAMERA_HEIGHT = 480;
 
-	private static final float DEMO_VELOCITY = 100.0f;
-
+	private static final float BALL_STARTING_VELOCITY = 200.0f;
+	private static final float BALL_ACCELERATION = -10f;
 
 	// ===========================================================
 	// Fields
@@ -142,21 +142,29 @@ public class BallShakeActivity extends BaseLiveWallpaperService {
 			super(pX, pY, pTextureRegion, pVertexBufferObjectManager);
 			this.mPhysicsHandler = new PhysicsHandler(this);
 			this.registerUpdateHandler(this.mPhysicsHandler);
-			this.mPhysicsHandler.setVelocity(BallShakeActivity.DEMO_VELOCITY, BallShakeActivity.DEMO_VELOCITY);
+			this.mPhysicsHandler.setVelocity(BallShakeActivity.BALL_STARTING_VELOCITY, BallShakeActivity.BALL_STARTING_VELOCITY);
+			this.mPhysicsHandler.setAcceleration(BallShakeActivity.BALL_ACCELERATION, BallShakeActivity.BALL_ACCELERATION);
 		}
 
 		@Override
 		protected void onManagedUpdate(final float pSecondsElapsed) {
+			final float currentVelocityX = this.mPhysicsHandler.getVelocityX();
+			final float currentVelocityY = this.mPhysicsHandler.getVelocityY();
+			
 			if(this.mX < 0) {
-				this.mPhysicsHandler.setVelocityX(BallShakeActivity.DEMO_VELOCITY);
+				this.mPhysicsHandler.setVelocityX(BallShakeActivity.BALL_STARTING_VELOCITY);
+//				this.mPhysicsHandler.setAccelerationX(BallShakeActivity.BALL_ACCELERATION);
 			} else if(this.mX + this.getWidth() > BallShakeActivity.CAMERA_WIDTH) {
-				this.mPhysicsHandler.setVelocityX(-BallShakeActivity.DEMO_VELOCITY);
+				this.mPhysicsHandler.setVelocityX(-currentVelocityX);
+//				this.mPhysicsHandler.setAccelerationX(BallShakeActivity.BALL_ACCELERATION);
 			}
 
 			if(this.mY < 0) {
-				this.mPhysicsHandler.setVelocityY(BallShakeActivity.DEMO_VELOCITY);
+				this.mPhysicsHandler.setVelocityY(BallShakeActivity.BALL_STARTING_VELOCITY);
+//				this.mPhysicsHandler.setAccelerationY(BallShakeActivity.BALL_ACCELERATION);
 			} else if(this.mY + this.getHeight() > BallShakeActivity.CAMERA_HEIGHT) {
-				this.mPhysicsHandler.setVelocityY(-BallShakeActivity.DEMO_VELOCITY);
+				this.mPhysicsHandler.setVelocityY(-currentVelocityY);
+//				this.mPhysicsHandler.setAccelerationY(BallShakeActivity.BALL_ACCELERATION);
 			}
 
 			super.onManagedUpdate(pSecondsElapsed);
