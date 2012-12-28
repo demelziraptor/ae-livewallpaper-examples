@@ -17,7 +17,6 @@ import org.andengine.opengl.vbo.VertexBufferObjectManager;
 public class WallpaperActivity extends BaseLiveWallpaperService {
 	private int CAMERA_WIDTH = 480;
 	private int CAMERA_HEIGHT = 720;
-	private static final float catVelocity = 100.0f;
 	private Camera manokamera ;
 	private Scene manoscena;
 	private ITextureRegion skyRegion;

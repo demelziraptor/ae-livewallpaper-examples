@@ -11,7 +11,7 @@
         android:label="AndEngine LiveWallpaper Examples" >
               <service
             android:label="AndEngine LiveWallpaper Examples"
-            android:name=".AccelerometerSpriteActivity"
+            android:name="ShakeActivity"
             android:permission="android.permission.BIND_WALLPAPER">
             <intent-filter>
                 <action android:name="android.service.wallpaper.WallpaperService" />
@@ -21,6 +21,7 @@
               <activity android:name="BallActivity"></activity>
               <activity android:name=".AccelerometerSpriteActivity"></activity>
               <activity android:name="WallPaperActivity"></activity>
+              <activity android:name="ShakeActivity"></activity>
 
    		
         		
