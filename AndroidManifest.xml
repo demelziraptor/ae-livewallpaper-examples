@@ -4,14 +4,16 @@
     android:versionCode="1"
     android:versionName="1.0" >
 
-    
+ 	<uses-feature android:name="android.software.live_wallpaper"
+		android:required="true"></uses-feature>
+	<uses-sdk android:minSdkVersion="8" />   
 
     <application
         android:icon="@drawable/ic_launcher"
         android:label="AndEngine LiveWallpaper Examples" >
               <service
             android:label="AndEngine LiveWallpaper Examples"
-            android:name="ShakeActivity"
+            android:name="BallShakeActivity"
             android:permission="android.permission.BIND_WALLPAPER">
             <intent-filter>
                 <action android:name="android.service.wallpaper.WallpaperService" />
@@ -22,11 +24,9 @@
               <activity android:name=".AccelerometerSpriteActivity"></activity>
               <activity android:name="WallPaperActivity"></activity>
               <activity android:name="ShakeActivity"></activity>
+              <activity android:name="BallShakeActivity"></activity>
 
    		
         		
     </application>
-	<uses-feature android:name="android.software.live_wallpaper"
-		android:required="true"></uses-feature>
-	<uses-sdk android:minSdkVersion="8" />
 </manifest>
