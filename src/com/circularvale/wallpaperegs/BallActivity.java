@@ -22,8 +22,8 @@ public class BallActivity extends BaseLiveWallpaperService {
 	// Constants
 	// ===========================================================
 
-	private static final int CAMERA_WIDTH = 720;
-	private static final int CAMERA_HEIGHT = 480;
+	private static final int CAMERA_WIDTH = 480;
+	private static final int CAMERA_HEIGHT = 720;
 
 	private static final float DEMO_VELOCITY = 100.0f;
 
@@ -50,7 +50,7 @@ public class BallActivity extends BaseLiveWallpaperService {
 	public EngineOptions onCreateEngineOptions() {
 		final Camera camera = new Camera(0, 0, BallActivity.CAMERA_WIDTH, BallActivity.CAMERA_HEIGHT);
 
-		return new EngineOptions(true, ScreenOrientation.LANDSCAPE_FIXED, new RatioResolutionPolicy(BallActivity.CAMERA_WIDTH, BallActivity.CAMERA_HEIGHT), camera);
+		return new EngineOptions(true, ScreenOrientation.PORTRAIT_FIXED, new RatioResolutionPolicy(BallActivity.CAMERA_WIDTH, BallActivity.CAMERA_HEIGHT), camera);
 	}
 
 	//@Override

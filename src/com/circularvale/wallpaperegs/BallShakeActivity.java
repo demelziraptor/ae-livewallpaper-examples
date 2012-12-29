@@ -8,15 +8,21 @@ import org.andengine.engine.options.resolutionpolicy.RatioResolutionPolicy;
 import org.andengine.entity.scene.Scene;
 import org.andengine.entity.scene.background.Background;
 import org.andengine.entity.sprite.AnimatedSprite;
+import org.andengine.entity.text.Text;
+import org.andengine.entity.text.TextOptions;
 import org.andengine.entity.util.FPSLogger;
 import org.andengine.extension.ui.livewallpaper.BaseLiveWallpaperService;
+import org.andengine.opengl.font.Font;
+import org.andengine.opengl.font.FontFactory;
 import org.andengine.opengl.texture.TextureOptions;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
 import org.andengine.opengl.texture.region.TiledTextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
+import org.andengine.util.HorizontalAlign;
 
 import android.content.Context;
+import android.graphics.Typeface;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.widget.Toast;
@@ -27,11 +33,11 @@ public class BallShakeActivity extends BaseLiveWallpaperService {
 	// Constants
 	// ===========================================================
 
-	private static final int CAMERA_WIDTH = 720;
-	private static final int CAMERA_HEIGHT = 480;
+	private static final int CAMERA_WIDTH = 480;
+	private static final int CAMERA_HEIGHT = 720;
 
 	private static final float BALL_STARTING_VELOCITY = 200.0f;
-	private static final float BALL_ACCELERATION = -10f;
+	private static final float BALL_ACCELERATION = -20f;
 
 	// ===========================================================
 	// Fields
@@ -42,6 +48,9 @@ public class BallShakeActivity extends BaseLiveWallpaperService {
 
 	private BitmapTextureAtlas mBitmapTextureAtlas;
 	private TiledTextureRegion mFaceTextureRegion;
+	
+	private Text centerText;
+	private Font mFont;
 
 	// ===========================================================
 	// Constructors
@@ -59,7 +68,7 @@ public class BallShakeActivity extends BaseLiveWallpaperService {
 	public EngineOptions onCreateEngineOptions() {
 		final Camera camera = new Camera(0, 0, BallShakeActivity.CAMERA_WIDTH, BallShakeActivity.CAMERA_HEIGHT);
 
-		return new EngineOptions(true, ScreenOrientation.LANDSCAPE_FIXED, new RatioResolutionPolicy(BallShakeActivity.CAMERA_WIDTH, BallShakeActivity.CAMERA_HEIGHT), camera);
+		return new EngineOptions(true, ScreenOrientation.PORTRAIT_FIXED, new RatioResolutionPolicy(BallShakeActivity.CAMERA_WIDTH, BallShakeActivity.CAMERA_HEIGHT), camera);
 	}
 
 	//@Override
@@ -67,20 +76,15 @@ public class BallShakeActivity extends BaseLiveWallpaperService {
 			OnCreateResourcesCallback pOnCreateResourcesCallback)
 			throws Exception {
 		
-	    mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-	    mSensorListener = new ShakeEventListener();
-	    mSensorListener.setOnShakeListener(new ShakeEventListener.OnShakeListener() {
-
-	      public void onShake() {
-	        Toast.makeText(BallShakeActivity.this, "Shake!", Toast.LENGTH_SHORT).show();
-	      }
-	    });
 	    
 	    BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/");
 
 		this.mBitmapTextureAtlas = new BitmapTextureAtlas(this.getTextureManager(), 64, 32, TextureOptions.BILINEAR);
 		this.mFaceTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, "face_circle_tiled.png", 0, 0, 2, 1);
 		this.mBitmapTextureAtlas.load();
+		
+		this.mFont = FontFactory.create(this.getFontManager(), this.getTextureManager(), 256, 256, Typeface.create(Typeface.DEFAULT, Typeface.BOLD), 20);
+		this.mFont.load();
 		
 		pOnCreateResourcesCallback.onCreateResourcesFinished();
 	}
@@ -99,6 +103,16 @@ public class BallShakeActivity extends BaseLiveWallpaperService {
 
 		scene.attachChild(ball);
 		
+	    mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+	    mSensorListener = new ShakeEventListener();
+	    mSensorListener.setOnShakeListener(new ShakeEventListener.OnShakeListener() {
+
+	      public void onShake() {
+	        Toast.makeText(BallShakeActivity.this, "Shake!", Toast.LENGTH_SHORT).show();
+	        ball.mPhysicsHandler.setAcceleration(BallShakeActivity.BALL_STARTING_VELOCITY, BallShakeActivity.BALL_STARTING_VELOCITY);
+	      }
+	    });
+		
 		mSensorManager.registerListener(mSensorListener,
 				mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
 				SensorManager.SENSOR_DELAY_UI);
@@ -111,6 +125,7 @@ public class BallShakeActivity extends BaseLiveWallpaperService {
 		pOnPopulateSceneCallback.onPopulateSceneFinished();
 		
 	}
+
 
 	/*
 	@Override
@@ -148,26 +163,54 @@ public class BallShakeActivity extends BaseLiveWallpaperService {
 
 		@Override
 		protected void onManagedUpdate(final float pSecondsElapsed) {
+			
 			final float currentVelocityX = this.mPhysicsHandler.getVelocityX();
 			final float currentVelocityY = this.mPhysicsHandler.getVelocityY();
+			final float currentAccelerationX = this.mPhysicsHandler.getAccelerationX();
+			final float currentAccelerationY = this.mPhysicsHandler.getAccelerationY();
 			
+			// has been travelling to the left
 			if(this.mX < 0) {
-				this.mPhysicsHandler.setVelocityX(BallShakeActivity.BALL_STARTING_VELOCITY);
-//				this.mPhysicsHandler.setAccelerationX(BallShakeActivity.BALL_ACCELERATION);
+				this.mPhysicsHandler.setVelocityX(-currentVelocityX);
+				this.mPhysicsHandler.setAccelerationX(makeNegative(currentAccelerationX));
+			// has been travelling to the right
 			} else if(this.mX + this.getWidth() > BallShakeActivity.CAMERA_WIDTH) {
 				this.mPhysicsHandler.setVelocityX(-currentVelocityX);
-//				this.mPhysicsHandler.setAccelerationX(BallShakeActivity.BALL_ACCELERATION);
+				this.mPhysicsHandler.setAccelerationX(makePositive(currentAccelerationX));
 			}
-
+			// has been travelling to the bottom
 			if(this.mY < 0) {
-				this.mPhysicsHandler.setVelocityY(BallShakeActivity.BALL_STARTING_VELOCITY);
-//				this.mPhysicsHandler.setAccelerationY(BallShakeActivity.BALL_ACCELERATION);
+				this.mPhysicsHandler.setVelocityY(-currentVelocityY);
+				this.mPhysicsHandler.setAccelerationY(makeNegative(currentAccelerationY));
+			// has been travelling to the top
 			} else if(this.mY + this.getHeight() > BallShakeActivity.CAMERA_HEIGHT) {
 				this.mPhysicsHandler.setVelocityY(-currentVelocityY);
-//				this.mPhysicsHandler.setAccelerationY(BallShakeActivity.BALL_ACCELERATION);
+				this.mPhysicsHandler.setAccelerationY(makePositive(currentAccelerationY));
+			}
+			
+			// stop if velocity reaches 0
+			if(currentVelocityX == 0.0f){
+				this.mPhysicsHandler.setAccelerationX(0.0f);
+				this.mPhysicsHandler.setAccelerationY(0.0f);
+				this.mPhysicsHandler.setVelocityX(0.0f);
+				this.mPhysicsHandler.setVelocityY(0.0f);
+			}
+			if(currentVelocityY == 0.0f){
+				this.mPhysicsHandler.setAccelerationX(0.0f);
+				this.mPhysicsHandler.setAccelerationY(0.0f);
+				this.mPhysicsHandler.setVelocityX(0.0f);
+				this.mPhysicsHandler.setVelocityY(0.0f);
 			}
 
 			super.onManagedUpdate(pSecondsElapsed);
+		}
+		
+		private float makePositive(final float velo){
+			return Math.abs(velo);
+		}
+		
+		private float makeNegative(final float velo){
+			return -(Math.abs(velo));
 		}
 	}
 
