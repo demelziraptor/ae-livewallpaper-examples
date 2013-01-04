@@ -3,6 +3,8 @@ package com.circularvale.wallpaperegs;
 import org.andengine.engine.Engine.EngineLock;
 import org.andengine.engine.camera.Camera;
 import org.andengine.engine.handler.physics.PhysicsHandler;
+import org.andengine.engine.handler.timer.ITimerCallback;
+import org.andengine.engine.handler.timer.TimerHandler;
 import org.andengine.engine.options.EngineOptions;
 import org.andengine.engine.options.ScreenOrientation;
 import org.andengine.engine.options.resolutionpolicy.RatioResolutionPolicy;
@@ -11,6 +13,7 @@ import org.andengine.entity.scene.background.Background;
 import org.andengine.entity.sprite.AnimatedSprite;
 import org.andengine.entity.text.Text;
 import org.andengine.entity.text.TextOptions;
+import org.andengine.entity.util.FPSCounter;
 import org.andengine.entity.util.FPSLogger;
 import org.andengine.extension.ui.livewallpaper.BaseLiveWallpaperService;
 import org.andengine.opengl.font.Font;
@@ -50,7 +53,7 @@ public class BallShakeActivity extends BaseLiveWallpaperService {
 	private BitmapTextureAtlas mBitmapTextureAtlas;
 	private TiledTextureRegion mFaceTextureRegion;
 	
-	private Text centerText;
+	//private Text centerText;
 	private Font mFont;
 	
 	private final Scene scene = new Scene();
@@ -96,18 +99,30 @@ public class BallShakeActivity extends BaseLiveWallpaperService {
 	public void onCreateScene(OnCreateSceneCallback pOnCreateSceneCallback)
 			throws Exception {
 		this.mEngine.registerUpdateHandler(new FPSLogger());
+		final FPSCounter fpsCounter = new FPSCounter();
+		this.mEngine.registerUpdateHandler(fpsCounter);
 
 		this.scene.setBackground(new Background(0.09804f, 0.6274f, 0.8784f));
 		
+		final VertexBufferObjectManager vertexBufferObjectManager = this.getVertexBufferObjectManager();
+		
 		final float centerX = (BallShakeActivity.CAMERA_WIDTH - this.mFaceTextureRegion.getWidth()) / 2;
 		final float centerY = (BallShakeActivity.CAMERA_HEIGHT - this.mFaceTextureRegion.getHeight()) / 2;
-		final Ball ball = new Ball(centerX, centerY, this.mFaceTextureRegion, this.getVertexBufferObjectManager());
+		final Ball ball = new Ball(centerX, centerY, this.mFaceTextureRegion, vertexBufferObjectManager);
 		
-		final VertexBufferObjectManager vertexBufferObjectManager = this.getVertexBufferObjectManager();
-		this.centerText = new Text(100, 40, mFont, "Initial text", new TextOptions(HorizontalAlign.CENTER), vertexBufferObjectManager);
+		//this.centerText = new Text(100, 40, mFont, "Initial text", new TextOptions(HorizontalAlign.CENTER), vertexBufferObjectManager);
+		
+		final Text elapsedText = new Text(100, 160, this.mFont, "Seconds elapsed:", "Seconds elapsed: XXXXX".length(), vertexBufferObjectManager);
 
 		this.scene.attachChild(ball);
-		this.scene.attachChild(this.centerText);
+		this.scene.attachChild(elapsedText);
+		
+		scene.registerUpdateHandler(new TimerHandler(1 / 20.0f, true, new ITimerCallback() {
+			//@Override
+			public void onTimePassed(final TimerHandler pTimerHandler) {
+				elapsedText.setText("Seconds elapsed: " + BallShakeActivity.this.mEngine.getSecondsElapsedTotal());
+			}
+		}));
 		
 	    mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 	    mSensorListener = new ShakeEventListener();
@@ -130,21 +145,6 @@ public class BallShakeActivity extends BaseLiveWallpaperService {
 			OnPopulateSceneCallback pOnPopulateSceneCallback) throws Exception {
 		pOnPopulateSceneCallback.onPopulateSceneFinished();
 		
-	}
-	
-	public void setText(final Ball ball, Text centerText){
-		if(centerText == null){
-			return;
-		}
-		final VertexBufferObjectManager vertexBufferObjectManager = super.getVertexBufferObjectManager();
-		final EngineLock engineLock = this.mEngine.getEngineLock();
-		engineLock.lock();
-		this.scene.detachChild(centerText);
-		this.centerText.dispose();
-		this.centerText = null;
-		engineLock.unlock();
-		//centerText = new Text(100, 40, mFont, "Hello!\n" + ball.mPhysicsHandler.getAccelerationX(), new TextOptions(HorizontalAlign.CENTER), vertexBufferObjectManager);
-		//scene.attachChild(centerText);
 	}
 
 
@@ -185,7 +185,7 @@ public class BallShakeActivity extends BaseLiveWallpaperService {
 		@Override
 		protected void onManagedUpdate(final float pSecondsElapsed) {
 			
-			BallShakeActivity.this.setText(this, BallShakeActivity.this.centerText);
+			//BallShakeActivity.this.setText(this, BallShakeActivity.this.centerText);
 			
 			final float currentVelocityX = this.mPhysicsHandler.getVelocityX();
 			final float currentVelocityY = this.mPhysicsHandler.getVelocityY();
